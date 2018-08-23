@@ -13,8 +13,7 @@ type Msg struct{
 }
 
 type GoServer interface{
-	StartLink() ()
-	Init(...interface{}) ()
+	Init(interface{})
 	CodeChange()
 	Terminate(exitReason string)
 }
@@ -28,12 +27,12 @@ type Chan struct{
 
 
 // castNum : 异步channel的大小
-func StartLink(mod GoServer,ch *Chan, castNum int) {
+func StartLink(mod GoServer,ch *Chan, castNum int, opt interface{}) {
 	ch.CallCh = make(chan Msg)
 	ch.CastCh = make(chan Msg, castNum)
 	ch.ExitCh = make(chan string)
 	ch.CallRet = make(chan interface{})
-	go doSpawn(mod, *ch)
+	go doSpawn(mod, *ch, opt)
 }
 
 func Call(ch Chan, msg Msg) interface{}{
@@ -60,8 +59,8 @@ func Reply(ch Chan, msg interface{}){
 	ch.CallRet <- msg
 }
 
-func doSpawn(mod GoServer, ch Chan){
-	mod.Init()
+func doSpawn(mod GoServer, ch Chan, opt interface{}){
+	mod.Init(opt)
 	loop(mod, ch)
 	defer close(ch.CallRet)
 	defer close(ch.CallCh)

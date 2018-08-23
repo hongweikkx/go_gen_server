@@ -18,7 +18,7 @@ type testModule struct{
 
 
 func main(){
-	TestMod.StartLink()
+	startLink(TestMod)
 	time.Sleep(3 * time.Second)
 	fmt.Println("hello world start")
 	var msg com_server.Msg
@@ -32,14 +32,15 @@ func main(){
 	return
 }
 
-func (a testModule) Init(...interface{}){
-	fmt.Println("test_1 init")
+func startLink(mod testModule) {
+	fmt.Println("test_1 startLink")
+	com_server.StartLink(mod, &mod.ch, 1000, nil)
 }
 
-func (a testModule) StartLink() {
-	fmt.Println("test_1 startLink")
-	com_server.StartLink(a, &TestMod.ch, 1000)
+func (a testModule) Init(a interface{}){
+	fmt.Println("test_1 init", a)
 }
+
 
 func (a testModule) CodeChange(){
 	fmt.Println("test_1 code_change")
