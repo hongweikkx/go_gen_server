@@ -13,7 +13,7 @@ type Msg struct{
 }
 
 type GoServer interface{
-	Init(interface{})
+	Init(interface{}) interface{}
 	CodeChange()
 	Terminate(exitReason string)
 }
@@ -32,12 +32,14 @@ func StartLink(mod GoServer,ch *Chan, castNum int, opt interface{}) {
 	ch.CastCh = make(chan Msg, castNum)
 	ch.ExitCh = make(chan string)
 	ch.CallRet = make(chan interface{})
+	fmt.Println(ch.CallRet)
 	go doSpawn(mod, *ch, opt)
 }
 
 func Call(ch Chan, msg Msg) interface{}{
 	msg.CallRet = ch.CallRet
 	ch.CallCh <- msg
+	fmt.Println(msg)
 	select {
 	case ret := <- ch.CallRet:
 	        fmt.Println("call back", ret)
@@ -60,36 +62,46 @@ func Reply(ch Chan, msg interface{}){
 }
 
 func doSpawn(mod GoServer, ch Chan, opt interface{}){
-	mod.Init(opt)
-	loop(mod, ch)
+	state := mod.Init(opt)
+	loop(mod, ch, state)
 	defer close(ch.CallRet)
 	defer close(ch.CallCh)
 	defer close(ch.CastCh)
 	defer close(ch.ExitCh)
 }
 
-func loop(mod GoServer, ch Chan){
+func loop(mod GoServer, ch Chan, state interface{}){
 	select{
 	case callMsg := <- ch.CallCh:
-		r := MsgFun(callMsg)
+		r := MsgFun(callMsg, state)
 		Reply(ch, r)
 	case castMsg := <- ch.CastCh:
-		MsgFun(castMsg)
+		MsgFun(castMsg, state)
 	case exitReason := <- ch.ExitCh:
 		mod.Terminate(exitReason)
 		return
 	}
-	loop(mod, ch)
+	loop(mod, ch, state)
 }
 
-func MsgFun(m Msg) interface{}{
-	f := reflect.ValueOf(m.Fun)
-	in := make([]reflect.Value, len(m.Args))
-	for k,param := range m.Args{
-		fmt.Println(param)
+func MsgFun(m Msg, state interface{}) ([]reflect.Value){
+	nl := len(m.Args) +  1
+	nargs := make([]interface{}, nl)
+	for i:= range m.Args{
+		nargs[i] = m.Args[i]
+	}
+	nargs[nl - 1] = state
+	return Apply(m.Fun, nargs)
+}
+
+func Apply(f interface{}, args []interface{})([]reflect.Value){
+	fun := reflect.ValueOf(f)
+	in := make([]reflect.Value, len(args))
+	for k,param := range args{
 		in[k] = reflect.ValueOf(param)
 	}
-	r := f.Call(in)
+	r := fun.Call(in)
 	return r
+
 }
 

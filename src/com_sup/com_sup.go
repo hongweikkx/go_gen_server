@@ -27,6 +27,7 @@ type Child struct{
 	shutdown string
 	workType string
 	startF func()
+	args []interface{}
 }
 type Stragy struct{
 	strageType string // simple_one_for_one one_for_one one_for_all
@@ -54,8 +55,6 @@ func (a supModule) Init(sup interface{}){
 		init_child(childSpec)
 	}
 
-
-
 	fmt.Println("test_1 init")
 }
 
@@ -73,19 +72,27 @@ func is_simple(childSpec ChildSpec) bool{
 
 // ========================= init =================================
 func init_dynamic(childSpec ChildSpec) {
-	children, err := check_startspec(childSpec)
+	err := check_startspec(childSpec)
 	if err != nil{
-		return "check_error"
+		panic("check_error")
 	}
 }
 
 func init_child(childSpec ChildSpec){
-	children, err := check_startspec(childSpec)
+	err := check_startspec(childSpec)
 	if err != nil {
-		return "check_error"
+		panic("check_error")
 	}
-	err = do_start_child(children)
-	return err
+	do_start_child(childSpec)
 }
 
-func do_start_child(children )
+func do_start_child(children ChildSpec){
+	l := len(children.childs)
+	for i:= 0; i <l; i++{
+		com_server.Apply(children.childs[i].startF, children.childs[i].args)
+	}
+}
+// todo
+func check_startspec(childSpec ChildSpec) error{
+	return nil
+}
