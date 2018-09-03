@@ -3,7 +3,6 @@ package com_server
 import (
 	"reflect"
 	"time"
-	"fmt"
 )
 
 type Msg struct{
@@ -14,8 +13,8 @@ type Msg struct{
 
 type GoServer interface{
 	Init(interface{}) interface{}
-	CodeChange()
-	Terminate(exitReason string)
+	CodeChange(state interface{})
+	Terminate(exitReason string, state interface{})
 }
 
 type Chan struct{
@@ -32,17 +31,14 @@ func StartLink(mod GoServer,ch *Chan, castNum int, opt interface{}) {
 	ch.CastCh = make(chan Msg, castNum)
 	ch.ExitCh = make(chan string)
 	ch.CallRet = make(chan interface{})
-	fmt.Println(ch.CallRet)
 	go doSpawn(mod, *ch, opt)
 }
 
 func Call(ch Chan, msg Msg) interface{}{
 	msg.CallRet = ch.CallRet
 	ch.CallCh <- msg
-	fmt.Println(msg)
 	select {
 	case ret := <- ch.CallRet:
-	        fmt.Println("call back", ret)
 		return ret
 	case <- time.After(5 * time.Second):
 		panic("call timeout")
@@ -74,11 +70,14 @@ func loop(mod GoServer, ch Chan, state interface{}){
 	select{
 	case callMsg := <- ch.CallCh:
 		r := MsgFun(callMsg, state)
-		Reply(ch, r)
+		var ret interface{}
+	        ret, state = get_state(r)
+		Reply(ch, ret)
 	case castMsg := <- ch.CastCh:
-		MsgFun(castMsg, state)
+		r := MsgFun(castMsg, state)
+		_, state = get_state(r)
 	case exitReason := <- ch.ExitCh:
-		mod.Terminate(exitReason)
+		mod.Terminate(exitReason, state)
 		return
 	}
 	loop(mod, ch, state)
@@ -105,3 +104,8 @@ func Apply(f interface{}, args []interface{})([]reflect.Value){
 
 }
 
+func get_state(r []reflect.Value)([]reflect.Value, interface{}){
+	l := len(r)
+	state := r[l - 1]
+	return r[:l - 1], state.Interface()
+}
