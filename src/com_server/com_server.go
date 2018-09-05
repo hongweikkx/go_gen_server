@@ -12,8 +12,8 @@ type Msg struct{
 }
 
 type GoServer interface{
+	StartLink()
 	Init(interface{}) interface{}
-	CodeChange(state interface{})
 	Terminate(exitReason string, state interface{})
 }
 

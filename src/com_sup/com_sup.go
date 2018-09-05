@@ -1,3 +1,6 @@
+//一段废弃的代码： 本意是像用go copy一份erlang 的supervisor的代码。 但是因为没有go pid的改变 所以删除很麻烦。
+//如果要做的话，就得需要一个唯一id 和 map机制。 不太好， 至少不够golang
+/*
 package com_sup
 
 import (
@@ -25,8 +28,8 @@ type supState struct{
 	intensity int
 	period    int
 
-	waitGroup sync.WaitGroup
-	children []Child
+	waitGroup sync.WaitGroup // 记录已经启动的group
+	children []Child   // 记录已经启动的pid 和他的启动方式 如果是simple_one_for_one 就不记录了
 	restarts []Child
 	dynamicRestarts  int
 }
@@ -59,41 +62,31 @@ func StartLink(mod supModule,  sup GoSup) {
 
 
 
-// 首先我要知道 这个多个参数该怎么用
-// sync
 func (a supModule) Init(sup interface{}) interface{}{
 	nSup := sup.(GoSup)
 	var childSpec ChildSpec
 	childSpec = nSup.InitSup()
 	state := initState(childSpec.stragy, nSup)
-	if is_simple(childSpec.stragy.strageType) {
+	if isSimple(childSpec.stragy.strageType) {
 		//init_dynamic(&childSpec.childs)
 	} else {
-		init_child(childSpec.childs)
+		init_child(childSpec.childs, &state)
 	}
 
 	return state
-}
-
-func (a supModule) CodeChange(){
-	fmt.Println("test_1 code_change")
 }
 
 func (a supModule) Terminate(exitReason string){
 	fmt.Println("test_1 terminate")
 }
 
-// true: 表示成功
-func (a supModule) StartChild(g GoSup)bool{
+func (a supModule) StartChild(child Child)bool{
 	var msg com_server.Msg
 	msg.Fun = SupStartChild
-	msg.Args = []interface{}{g}
+	msg.Args = []interface{}{child}
 	return com_server.Call(a.ch, msg) == nil
 }
 
-func is_simple(s string) bool{
-	return s == "simple_one_for_one"
-}
 
 // ========================= init =================================
 func initState(s Stragy, g GoSup) supState{
@@ -121,23 +114,24 @@ func checkStrage(s Stragy) {
 //func init_dynamic(children *([]Child)){
 //}
 
-func init_child(childSpec []Child) []Child{
-	do_start_child(childSpec)
+func init_child(childSpec []Child, state *supState) []Child{
+	do_start_child(childSpec, state)
 }
 
-func do_start_child(children ChildSpec){
+func do_start_child(children ChildSpec, state *supState){
 	l := len(children.childs)
 	for i:= 0; i <l; i++{
 		com_server.Apply(children.childs[i].startF, children.childs[i].args)
+		saveChild(state, children.childs[i])
 	}
 }
 
-func SupStartChild(g GoSup, state interface{}) (error, interface{}){
+func SupStartChild(child Child, state interface{}) (error, interface{}){
 	var err error
-	if is_simple(state.(supState).stratgeType){
+	if isSimple(state.(supState).stratgeType){
 		err = supStartChildSimple(&state.(supState))
 	}else{
-		err = supStartChildOther(g, state.(supState))
+		err = supStartChildOther(child, state.(supState))
 	}
 	return err, state
 }
@@ -150,8 +144,70 @@ func supStartChildSimple(state *supState) error{
 	return err
 }
 
-func supStartChildOther(g GoSup, state *supState)error{
+func supStartChildOther(child Child, state *supState)error{
+	value := com_server.Apply(child.startF, child.args)
+	err := value[0].Interface().(error)
+	if err != nil{
+		saveChild(state, child)
+	}
 }
 
 func saveDynamicChild(state *supState) error{
+	state.waitGroup.Add(1)
 }
+
+func saveChild(state *supState, child Child) error{
+	append(state.children, child)
+	state.waitGroup.Add(1)
+}
+
+func isSimple(s string) bool{
+	return s == "simple_one_for_one"
+}
+*/
+
+
+// ================ ===================================================================================================
+// 另一个废弃的代码  我试图将csp 写成actor 模型， 但是不行
+// 1. com_server 一直在接收消息并执行， 但是除非其他人也用我的模型 否则无意义。 比如底层 dial 的实现， 就没有办法融入到其中
+// 2. com_sup 我可以用sync.WaitGroup 来收集其他goroute的信息， 但是除了完成信息外 没有其他用。 那为啥还要有这个sup呢？
+//            我也可以照着supervisor的代码写， 倒是可以完成对go进程的控制， 但是没有办法移除， 因为没有唯一id， 除非有个注册制。。。
+//
+package com_sup
+
+import (
+	"sync"
+	"com_server"
+)
+
+type PoolSup struct {
+	work chan com_server.GoServer
+	wg sync.WaitGroup
+}
+
+func New() *PoolSup{
+	p := PoolSup{
+		work:make(chan com_server.GoServer),
+	}
+	for {
+		w := <- p.work
+		p.wg.Add(1)
+		w.StartLink()
+	}
+	return &p
+}
+
+func (p *PoolSup) Run(g com_server.GoServer){
+	p.work <- g
+}
+
+func (p *PoolSup) Done(){
+	p.wg.Done()
+}
+
+func (p *PoolSup) Shutdown(){
+	close(p.work)
+	p.wg.Wait()
+}
+
+
