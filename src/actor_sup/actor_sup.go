@@ -1,7 +1,7 @@
 //一段废弃的代码： 本意是像用go copy一份erlang 的supervisor的代码。 但是因为没有go pid的改变 所以删除很麻烦。
 //如果要做的话，就得需要一个唯一id 和 map机制。 不太好， 至少不够golang
 /*
-package com_sup
+package acotrsup
 
 import (
 	"com_server"
@@ -166,7 +166,6 @@ func isSimple(s string) bool{
 }
 */
 
-
 // ================ ===================================================================================================
 // 另一个废弃的代码  我试图将csp 写成actor 模型， 但是不行
 // 1. com_server 一直在接收消息并执行， 但是除非其他人也用我的模型 否则无意义。 比如底层 dial 的实现， 就没有办法融入到其中
@@ -176,38 +175,36 @@ func isSimple(s string) bool{
 package com_sup
 
 import (
-	"sync"
 	"com_server"
+	"sync"
 )
 
 type PoolSup struct {
 	work chan com_server.GoServer
-	wg sync.WaitGroup
+	wg   sync.WaitGroup
 }
 
-func New() *PoolSup{
+func New() *PoolSup {
 	p := PoolSup{
-		work:make(chan com_server.GoServer),
+		work: make(chan com_server.GoServer),
 	}
 	for {
-		w := <- p.work
+		w := <-p.work
 		p.wg.Add(1)
 		w.StartLink()
 	}
 	return &p
 }
 
-func (p *PoolSup) Run(g com_server.GoServer){
+func (p *PoolSup) Run(g com_server.GoServer) {
 	p.work <- g
 }
 
-func (p *PoolSup) Done(){
+func (p *PoolSup) Done() {
 	p.wg.Done()
 }
 
-func (p *PoolSup) Shutdown(){
+func (p *PoolSup) Shutdown() {
 	close(p.work)
 	p.wg.Wait()
 }
-
-
