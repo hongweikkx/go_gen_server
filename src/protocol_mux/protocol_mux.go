@@ -1,4 +1,5 @@
 package protocolmux
+// copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf
 
 import (
     "fmt"

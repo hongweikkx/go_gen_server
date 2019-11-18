@@ -1,4 +1,5 @@
 package workscheduler
+// copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf
 
 // version1:
 //func Schedule(servers []string, numTask int, call func(srv string, task int)) {
