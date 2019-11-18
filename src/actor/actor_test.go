@@ -1,18 +1,13 @@
 package actor
 
 import (
-	"reflect"
 	"testing"
 	"time"
 )
 
-var (
-	TestMod testModule
-)
 
-type testModule struct {
-	ch Chan
-}
+type testModule Mod
+var TestMod testModule
 
 const checkMark = "\u2713"
 const ballotX = "\u2717"
@@ -24,11 +19,12 @@ func TestComServer(t *testing.T) {
 	var msg Msg
 	msg.Fun = HandleCallHello
 	msg.Args = []interface{}{"hello", 1}
-	r := Call(TestMod.ch, msg)
+	r := Call(Mod(TestMod), msg)
 	t.Log("msg call", checkMark)
 
-	k := r.([]reflect.Value)[0].Interface().(string)
-	if k != "hello" {
+	k := ParseRet(r, 0).(string)
+	b := ParseRet(r, 1).(int)
+	if k != "hello" || b != 1{
 		t.Errorf("i get the return: %v %v", k, ballotX)
 	} else {
 		t.Log("i get the return:", k, checkMark)
@@ -36,7 +32,7 @@ func TestComServer(t *testing.T) {
 
 	// cast
 	msg.Args = []interface{}{"hello", 1}
-	Cast(TestMod.ch, msg)
+	Cast(Mod(TestMod), msg)
 	t.Log("msg cast", checkMark)
 	time.Sleep(3 * time.Second)
 
@@ -54,6 +50,6 @@ func (mod testModule) Init(i interface{}) interface{} {
 func (mod testModule) Terminate(exitReason string, state interface{}) {
 }
 
-func HandleCallHello(a string, b int, state interface{}) (string, interface{}) {
-	return a, state.(int) + 1
+func HandleCallHello(a string, b int, state interface{}) (string, int, interface{}) {
+	return a, b, state.(int) + 1
 }
