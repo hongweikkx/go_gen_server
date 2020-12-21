@@ -115,6 +115,6 @@ func getState(r []reflect.Value) ([]reflect.Value, interface{}) {
 }
 
 // ---------------------------- util func -------------------------
-func ParseRet(ret interface{}, i int) interface{}{
+func ParseRet(ret interface{}, i int) interface{} {
 	return ret.([]reflect.Value)[i].Interface()
 }

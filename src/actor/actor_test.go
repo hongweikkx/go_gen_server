@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-
 type testModule Mod
+
 var TestMod testModule
 
 const checkMark = "\u2713"
@@ -24,7 +24,7 @@ func TestComServer(t *testing.T) {
 
 	k := ParseRet(r, 0).(string)
 	b := ParseRet(r, 1).(int)
-	if k != "hello" || b != 1{
+	if k != "hello" || b != 1 {
 		t.Errorf("i get the return: %v %v", k, ballotX)
 	} else {
 		t.Log("i get the return:", k, checkMark)

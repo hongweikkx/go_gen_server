@@ -1,4 +1,5 @@
 package replicatedclient
+
 // copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf
 
 import (
@@ -41,30 +42,29 @@ func (c *Client) Call(args Args) Reply {
 	t := time.NewTimer(timeout)
 	defer t.Stop()
 
-
 	done := make(chan result, 1)
 	c.mu.Lock()
 	prefer := c.prefer
 	c.mu.Unlock()
 	var r result
 	for off := 0; off < len(c.servers); off++ {
-		id := (prefer + off)%len(c.servers)
+		id := (prefer + off) % len(c.servers)
 		go func(i int) {
 			done <- result{i, c.callOne(c.servers[i], args)}
 		}(id)
 	}
 	select {
-		case r = <- done:
-		    goto Done
-		case <- t.C:
-			// timeout
-			// if no timeout t.Reset(timeout)
+	case r = <-done:
+		goto Done
+	case <-t.C:
+		// timeout
+		// if no timeout t.Reset(timeout)
 	}
 
-	r = <- done
-	Done :
-		c.mu.Lock()
-		c.prefer = r.serverID
-		c.mu.Unlock()
+	r = <-done
+Done:
+	c.mu.Lock()
+	c.prefer = r.serverID
+	c.mu.Unlock()
 	return r.reply
 }

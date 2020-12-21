@@ -1,4 +1,5 @@
 package pubsub
+
 // copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf
 
 import (
@@ -25,8 +26,6 @@ type Server struct {
 	cancel    chan subReq
 }
 
-
-
 type subReq struct {
 	c  chan<- Event
 	ok chan bool
@@ -43,7 +42,7 @@ func (s *Server) Publish(e Event) {
 	s.publish <- e
 }
 
-func (s *Server) Subscribe(c chan<- Event) error{
+func (s *Server) Subscribe(c chan<- Event) error {
 	r := subReq{c: c, ok: make(chan bool)}
 	s.subscribe <- r
 	if !<-r.ok {
@@ -52,7 +51,7 @@ func (s *Server) Subscribe(c chan<- Event) error{
 	return nil
 }
 
-func (s *Server) Cancel(c chan<- Event) error{
+func (s *Server) Cancel(c chan<- Event) error {
 	r := subReq{c: c, ok: make(chan bool)}
 	s.cancel <- r
 	if !<-r.ok {
@@ -62,7 +61,7 @@ func (s *Server) Cancel(c chan<- Event) error{
 }
 
 func (s *Server) loop() {
-	sub := make(map[chan<- Event]chan<-Event)
+	sub := make(map[chan<- Event]chan<- Event)
 	for {
 		select {
 		case e := <-s.publish:
@@ -70,7 +69,7 @@ func (s *Server) loop() {
 				h <- e
 			}
 		case r := <-s.subscribe:
-			if sub[r.c] != nil{
+			if sub[r.c] != nil {
 				r.ok <- false
 				break
 			}
