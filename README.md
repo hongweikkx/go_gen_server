@@ -2,11 +2,13 @@
 ### 1. groutine work pattern 
 
 + [x] publish/subscribe server
-+ [x] Work scheduler 
-+ [x] replicate service client
-+ [x] protocol multiplexer
-+ [x] actor
++ [x] paraller
+
++ [ ] Work scheduler
++ [ ] replicate service client
++ [ ] protocol multiplexer
++ [ ] actor
 + [ ] actor_sup
 
-### 2. pattern interface
-*todo*
+### todo
++ [ ] 图文介绍

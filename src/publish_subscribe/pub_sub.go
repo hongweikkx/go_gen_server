@@ -1,10 +1,8 @@
-package pubsub
-
 // copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf
+package pubsub
 
 import (
 	"errors"
-	"fmt"
 )
 
 type Event interface{}
@@ -74,7 +72,6 @@ func (s *Server) loop() {
 				break
 			}
 			h := make(chan Event)
-			fmt.Println("aaa")
 			go helper(h, r.c)
 			sub[r.c] = h
 			r.ok <- true
@@ -94,7 +91,6 @@ func helper(in <-chan Event, out chan<- Event) {
 	q := []Event{}
 	for in != nil {
 		// http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf is in != nil && len(q) > 0 是错误的
-		// Decide whether and what to send
 		var sendOut chan<- Event
 		var next Event
 		if len(q) > 0 {
