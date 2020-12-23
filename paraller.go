@@ -1,17 +1,14 @@
 // this paraller model is used to execute functions in parallel
-package paraller
+package pattern
 
 import (
-	"errors"
 	"fmt"
 	"sync"
-
-	pattern "github.com/hongweikkx/go_pattern"
 )
 
 type Paraller struct {
 	wg       sync.WaitGroup
-	handlers []*pattern.HandlerFunc
+	handlers []*HandlerFunc
 	ErrChan  chan error
 }
 
@@ -19,7 +16,7 @@ func NewParaller() *Paraller {
 	return &Paraller{}
 }
 
-func (p *Paraller) Add(handle *pattern.HandlerFunc) {
+func (p *Paraller) Add(handle *HandlerFunc) {
 	p.handlers = append(p.handlers, handle)
 }
 
@@ -31,11 +28,11 @@ func (p *Paraller) Run() error {
 		p.ErrChan = make(chan error, hl)
 		p.wg.Add(len(p.handlers))
 		for k := range p.handlers {
-			go func(f pattern.HandlerFunc, ch chan error) {
+			go func(f HandlerFunc, ch chan error) {
 				defer p.wg.Done()
 				defer func() {
 					if err := recover(); err != nil {
-						ch <- errors.New(fmt.Sprintf("[recover]error: %+v", err))
+						ch <- fmt.Errorf("[recover]error: %+v", err)
 					}
 				}()
 				f.Run()

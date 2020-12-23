@@ -1,10 +1,8 @@
-package paraller
+package pattern
 
 import (
 	"testing"
 	"time"
-
-	pattern "github.com/hongweikkx/go_pattern"
 )
 
 func TestParaller(t *testing.T) {
@@ -14,9 +12,9 @@ func TestParaller(t *testing.T) {
 	var convertB int
 	var convertC bool
 	delRet := 0
-	p1.Add(pattern.NewHandlerFunc(add, 1, 2).SetRets(&addRet))
-	p1.Add(pattern.NewHandlerFunc(convert, "hello", 88, false).SetRets(&convertA, &convertB, &convertC))
-	p1.Add(pattern.NewHandlerFunc(del, 5, 3).SetRets(&delRet))
+	p1.Add(NewHandlerFunc(add, 1, 2).SetRets(&addRet))
+	p1.Add(NewHandlerFunc(convert, "hello", 88, false).SetRets(&convertA, &convertB, &convertC))
+	p1.Add(NewHandlerFunc(del, 5, 3).SetRets(&delRet))
 	err := p1.Run()
 	if err != nil || addRet != 3 || delRet != 2 || convertA != "hello" || convertB != 88 || convertC != false {
 		t.Error("p1 test err")
@@ -25,7 +23,7 @@ func TestParaller(t *testing.T) {
 	p2 := NewParaller()
 	t2Start := time.Now()
 	// default 2 * second
-	p2.Add(pattern.NewHandlerFunc(sleep))
+	p2.Add(NewHandlerFunc(sleep))
 	err = p2.Run()
 	t2End := time.Now()
 	if err != nil || t2End.Unix()-t2Start.Unix() <= 1 {
@@ -33,15 +31,11 @@ func TestParaller(t *testing.T) {
 	}
 
 	p3 := NewParaller()
-	p3.Add(pattern.NewHandlerFunc(panicX))
+	p3.Add(NewHandlerFunc(panicX))
 	err = p3.Run()
 	if err == nil {
 		t.Error("p3 test err")
 	}
-}
-
-func add(x, y int) int {
-	return x + y
 }
 
 func del(x, y int) int {
@@ -61,4 +55,12 @@ func sleep() {
 
 func panicX() {
 	panic("hello")
+}
+
+func add(es ...int) int {
+	sum := 0
+	for _, v := range es {
+		sum += v
+	}
+	return sum
 }

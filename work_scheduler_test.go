@@ -1,14 +1,12 @@
-package workscheduler
+package pattern
 
 import (
 	"testing"
 	"time"
-
-	"github.com/hongweikkx/go_pattern"
 )
 
 func TestWS(t *testing.T) {
-	scT, err := NewSchedule(2, 3, go_pattern.NewHandlerFunc(sleepT))
+	scT, err := NewSchedule(2, 3, NewHandlerFunc(sleepT))
 	if err != nil {
 		t.Errorf("err:%s", err.Error())
 		return

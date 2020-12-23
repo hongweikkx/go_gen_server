@@ -1,21 +1,19 @@
 // the work scheduler model is used to exec n same task use m goroutine
-package workscheduler
+package pattern
 
 import (
 	"errors"
 	"fmt"
-
-	pattern "github.com/hongweikkx/go_pattern"
 )
 
 type Schedule struct {
 	numServer int
 	numTask   int
-	handler   *pattern.HandlerFunc
+	handler   *HandlerFunc
 	srvCh     chan int
 }
 
-func NewSchedule(numServer int, numTask int, handle *pattern.HandlerFunc) (*Schedule, error) {
+func NewSchedule(numServer int, numTask int, handle *HandlerFunc) (*Schedule, error) {
 	sc := &Schedule{
 		numServer: numServer,
 		numTask:   numTask,
@@ -40,7 +38,7 @@ func (sc *Schedule) Run() error {
 		for range taskCh {
 			defer func() {
 				if err := recover(); err != nil {
-					errCh <- errors.New(fmt.Sprintf("[recover]error: %+v", err))
+					errCh <- fmt.Errorf("[recover]error: %+v", err)
 				}
 			}()
 			sc.handler.Run()

@@ -1,4 +1,4 @@
-package go_pattern
+package pattern
 
 import (
 	"errors"
@@ -50,9 +50,6 @@ func (f *HandlerFunc) Check() error {
 	fT := reflect.ValueOf(f.F).Type()
 	if fT.Kind() != reflect.Func {
 		return errors.New("the func is not function")
-	}
-	if fT.NumIn() != len(f.Args) {
-		return errors.New("the func args is not valid")
 	}
 	if fT.NumOut() != len(f.Ret) {
 		return errors.New("the func return is not valid")

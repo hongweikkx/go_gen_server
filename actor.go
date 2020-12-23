@@ -1,12 +1,9 @@
 // actor model.
-package actor
+package pattern
 
 import (
 	"errors"
-	"fmt"
 	"time"
-
-	pattern "github.com/hongweikkx/go_pattern"
 )
 
 type Mod struct {
@@ -14,8 +11,8 @@ type Mod struct {
 }
 
 type MailBox struct {
-	callCh     chan *pattern.HandlerFunc
-	castCh     chan *pattern.HandlerFunc
+	callCh     chan *HandlerFunc
+	castCh     chan *HandlerFunc
 	exitCh     chan string
 	callDoneCh chan bool
 }
@@ -24,8 +21,8 @@ type MailBox struct {
 func Start(castNum int) *Mod {
 	mod := &Mod{
 		mailBox: &MailBox{
-			callCh:     make(chan *pattern.HandlerFunc, 1),
-			castCh:     make(chan *pattern.HandlerFunc, castNum),
+			callCh:     make(chan *HandlerFunc, 1),
+			castCh:     make(chan *HandlerFunc, castNum),
 			exitCh:     make(chan string),
 			callDoneCh: make(chan bool),
 		}}
@@ -33,20 +30,17 @@ func Start(castNum int) *Mod {
 	return mod
 }
 
-func (mod *Mod) Call(msg *pattern.HandlerFunc) error {
-	fmt.Println(time.Now().Unix())
+func (mod *Mod) Call(msg *HandlerFunc) error {
 	mod.mailBox.callCh <- msg
-	fmt.Println(time.Now().Unix(), mod.mailBox.callDoneCh)
 	select {
 	case <-mod.mailBox.callDoneCh:
 		return nil
 	case <-time.After(5 * time.Second):
-		fmt.Println(time.Now().Unix())
 		return errors.New("call timeout")
 	}
 }
 
-func (mod *Mod) Cast(msg *pattern.HandlerFunc) {
+func (mod *Mod) Cast(msg *HandlerFunc) {
 	mod.mailBox.castCh <- msg
 }
 
