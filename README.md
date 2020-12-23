@@ -4,10 +4,7 @@
 + [x] publish/subscribe server
 + [x] paraller(exec task in parallel)
 + [x] Work scheduler(do n same task use m goroutine)
++ [x] actor
 
 ### todo
-+ [ ] replicate service client
-+ [ ] protocol multiplexer
-+ [ ] actor
-+ [ ] actor_sup
 + [ ] 图文介绍
