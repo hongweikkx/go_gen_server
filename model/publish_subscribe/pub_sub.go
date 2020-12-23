@@ -1,4 +1,5 @@
-// copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf
+// this pub-sub model is used to subscribe to the publisher's event in order
+// copy from http://nil.csail.mit.edu/6.824/2018/notes/gopattern.pdf and modify
 package pubsub
 
 import (

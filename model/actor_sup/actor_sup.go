@@ -172,39 +172,40 @@ func isSimple(s string) bool{
 // 2. com_sup 我可以用sync.WaitGroup 来收集其他goroute的信息， 但是除了完成信息外 没有其他用。 那为啥还要有这个sup呢？
 //            我也可以照着supervisor的代码写， 倒是可以完成对go进程的控制， 但是没有办法移除， 因为没有唯一id， 除非有个注册制。。。
 // 可以移除啊， 就像com_sup 需要在这里注册一样， 我可以接受来自所有注册进程的退出信息，并完成重启。原来erlang也是这样的啊。
-package com_sup
-
-import (
-	"com_server"
-	"sync"
-)
-
-type PoolSup struct {
-	work chan com_server.GoServer
-	wg   sync.WaitGroup
-}
-
-func New() *PoolSup {
-	p := PoolSup{
-		work: make(chan com_server.GoServer),
-	}
-	for {
-		w := <-p.work
-		p.wg.Add(1)
-		w.StartLink()
-	}
-	return &p
-}
-
-func (p *PoolSup) Run(g com_server.GoServer) {
-	p.work <- g
-}
-
-func (p *PoolSup) Done() {
-	p.wg.Done()
-}
-
-func (p *PoolSup) Shutdown() {
-	close(p.work)
-	p.wg.Wait()
-}
+//package com_sup
+//
+//import (
+//	"com_server"
+//	"sync"
+//)
+//
+//type PoolSup struct {
+//	work chan com_server.GoServer
+//	wg   sync.WaitGroup
+//}
+//
+//func New() *PoolSup {
+//	p := PoolSup{
+//		work: make(chan com_server.GoServer),
+//	}
+//	for {
+//		w := <-p.work
+//		p.wg.Add(1)
+//		w.StartLink()
+//	}
+//	return &p
+//}
+//
+//func (p *PoolSup) Run(g com_server.GoServer) {
+//	p.work <- g
+//}
+//
+//func (p *PoolSup) Done() {
+//	p.wg.Done()
+//}
+//
+//func (p *PoolSup) Shutdown() {
+//	close(p.work)
+//	p.wg.Wait()
+//}
+package actorsup

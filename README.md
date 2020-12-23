@@ -2,13 +2,12 @@
 ### 1. groutine work pattern 
 
 + [x] publish/subscribe server
-+ [x] paraller
++ [x] paraller(exec task in parallel)
++ [x] Work scheduler(do n same task use m goroutine)
 
-+ [ ] Work scheduler
+### todo
 + [ ] replicate service client
 + [ ] protocol multiplexer
 + [ ] actor
 + [ ] actor_sup
-
-### todo
 + [ ] 图文介绍

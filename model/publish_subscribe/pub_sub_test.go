@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	pattern "github.com/hongweikkx/go_pattern"
 )
 
 func TestPubSub(t *testing.T) {
@@ -20,7 +22,8 @@ func TestPubSub(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	s.Publish("hello")
-	s.Publish("world")
+	sum := 0
+	s.Publish(pattern.NewHandlerFunc(add, 1, 3, 4, 4).SetRets(&sum))
 	a := <-c1
 	if a != "hello" {
 		t.Errorf("test pubsub error, sub:%+v", a)
@@ -38,4 +41,18 @@ func TestPubSub(t *testing.T) {
 	if c != nil {
 		t.Errorf("test pubsub error, sub:%+v", c)
 	}
+
+	f := <-c2
+	f.(*pattern.HandlerFunc).Run()
+	if sum != 12 {
+		t.Errorf("sum error, the sum:%v", sum)
+	}
+}
+
+func add(es ...int) int {
+	sum := 0
+	for _, v := range es {
+		sum += v
+	}
+	return sum
 }
