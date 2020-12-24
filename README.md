@@ -1,5 +1,5 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/hongweikkx/go_pattern)](https://goreportcard.com/report/github.com/hongweikkx/go_pattern)
-# go_pattern
+[![Go Report Card](https://goreportcard.com/badge/github.com/hongweikkx/goroutine_pattern)](https://goreportcard.com/report/github.com/hongweikkx/goroutine_pattern)
+# goroutine_pattern
 A Go library that implements groutine work pattern
 
 + [x] publish/subscribe server
@@ -12,7 +12,7 @@ parallel model example(others can refer to the test file):
 ```
 import (
 	"fmt"
-	pattern "github.com/hongweikkx/go_pattern"
+	pattern "github.com/hongweikkx/goroutine_pattern"
 )
 
 func main() {
