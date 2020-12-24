@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	p1 := pattern.NewParaller()
+	p1 := pattern.NewParallel()
 	addRet := 0
 	var convertA string
 	var convertB bool
