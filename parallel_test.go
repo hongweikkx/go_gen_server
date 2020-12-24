@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func TestParaller(t *testing.T) {
-	p1 := NewParaller()
+func TestParallel(t *testing.T) {
+	p1 := NewParallel()
 	addRet := 0
 	var convertA string
 	var convertB int
@@ -20,7 +20,7 @@ func TestParaller(t *testing.T) {
 		t.Error("p1 test err")
 	}
 
-	p2 := NewParaller()
+	p2 := NewParallel()
 	t2Start := time.Now()
 	// default 2 * second
 	p2.Add(NewHandlerFunc(sleep))
@@ -30,7 +30,7 @@ func TestParaller(t *testing.T) {
 		t.Error("p2 test err")
 	}
 
-	p3 := NewParaller()
+	p3 := NewParallel()
 	p3.Add(NewHandlerFunc(panicX))
 	err = p3.Run()
 	if err == nil {

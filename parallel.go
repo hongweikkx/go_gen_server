@@ -1,4 +1,4 @@
-// this paraller model is used to execute functions in parallel
+// this parallel model is used to execute functions in parallel
 package pattern
 
 import (
@@ -6,21 +6,21 @@ import (
 	"sync"
 )
 
-type Paraller struct {
+type Parallel struct {
 	wg       sync.WaitGroup
 	handlers []*HandlerFunc
 	ErrChan  chan error
 }
 
-func NewParaller() *Paraller {
-	return &Paraller{}
+func NewParallel() *Parallel {
+	return &Parallel{}
 }
 
-func (p *Paraller) Add(handle *HandlerFunc) {
+func (p *Parallel) Add(handle *HandlerFunc) {
 	p.handlers = append(p.handlers, handle)
 }
 
-func (p *Paraller) Run() error {
+func (p *Parallel) Run() error {
 	if err := p.checkPre(); err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func (p *Paraller) Run() error {
 	return p.errorRet()
 }
 
-func (p *Paraller) checkPre() error {
+func (p *Parallel) checkPre() error {
 	for _, handler := range p.handlers {
 		err := handler.Check()
 		if err != nil {
@@ -53,7 +53,7 @@ func (p *Paraller) checkPre() error {
 	return nil
 }
 
-func (p *Paraller) errorRet() error {
+func (p *Parallel) errorRet() error {
 	if len(p.ErrChan) == 0 {
 		return nil
 	}
