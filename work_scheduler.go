@@ -36,13 +36,15 @@ func (sc *Schedule) Run() error {
 	errCh := make(chan error)
 	runTasks := func(srvId int) {
 		for range taskCh {
-			defer func() {
-				if err := recover(); err != nil {
-					errCh <- fmt.Errorf("[recover]error: %+v", err)
-				}
+			func() {
+				defer func() {
+					if err := recover(); err != nil {
+						errCh <- fmt.Errorf("[recover]error: %+v", err)
+					}
+				}()
+				sc.handler.Run()
+				errCh <- nil
 			}()
-			sc.handler.Run()
-			errCh <- nil
 		}
 	}
 
